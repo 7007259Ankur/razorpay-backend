@@ -13,6 +13,10 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  accessCode: {
+    type: String,
+    required: true,   // ✅ Required because you'll always generate this
+  },
 });
 
 export const Payment = mongoose.model("Payment", paymentSchema);

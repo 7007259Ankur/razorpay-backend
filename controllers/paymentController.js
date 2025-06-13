@@ -28,20 +28,26 @@ export const paymentVerification = async (req, res) => {
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_API_SECRET) // ✅ FIXED HERE
+      .createHmac("sha256", process.env.RAZORPAY_API_SECRET)
       .update(body.toString())
       .digest("hex");
 
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
+      // ✅ Generate 4-digit access code
+      const accessCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+      // ✅ Store payment + accessCode in MongoDB
       await Payment.create({
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
+        accessCode,  // NEW FIELD
       });
 
-      res.redirect(`https://voluble-strudel-67099c.netlify.app/paymentsuccess?reference=${razorpay_payment_id}`);
+      // ✅ Redirect with 4-digit accessCode
+      res.redirect(`https://voluble-strudel-67099c.netlify.app/paymentsuccess?accessCode=${accessCode}`);
     } else {
       res.status(400).json({
         success: false,
