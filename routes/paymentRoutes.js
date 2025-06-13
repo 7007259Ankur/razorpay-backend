@@ -12,6 +12,6 @@ router.route("/checkout").post(checkout);
 router.route("/paymentverification").post(paymentVerification);
 
 // ✅ New route to verify access code for AI Predictor
-router.route("/verify-access-code/:accessCode").get(verifyAccessCode);
+router.route("/verify-access-code").post(verifyAccessCode);
 
 export default router;
