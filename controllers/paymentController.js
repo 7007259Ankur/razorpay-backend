@@ -2,6 +2,7 @@ import { instance } from "../server.js";
 import crypto from "crypto";
 import { Payment } from "../models/paymentModel.js";
 
+// Create a new Razorpay order
 export const checkout = async (req, res) => {
   try {
     const options = {
@@ -21,6 +22,7 @@ export const checkout = async (req, res) => {
   }
 };
 
+// Verify the Razorpay payment signature and save payment with 4-digit access code
 export const paymentVerification = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -35,18 +37,15 @@ export const paymentVerification = async (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      // ✅ Generate 4-digit access code
       const accessCode = Math.floor(1000 + Math.random() * 9000).toString();
 
-      // ✅ Store payment + accessCode in MongoDB
       await Payment.create({
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
-        accessCode,  // NEW FIELD
+        accessCode,
       });
 
-      // ✅ Redirect with 4-digit accessCode
       res.redirect(`https://voluble-strudel-67099c.netlify.app/paymentsuccess?accessCode=${accessCode}`);
     } else {
       res.status(400).json({
@@ -56,6 +55,24 @@ export const paymentVerification = async (req, res) => {
     }
   } catch (error) {
     console.error("❌ Payment Verification Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+// ✅ New Controller to verify access code before AI Predictor usage
+export const verifyAccessCode = async (req, res) => {
+  try {
+    const { accessCode } = req.params;
+
+    const payment = await Payment.findOne({ accessCode });
+
+    if (payment) {
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, message: "Invalid access code or payment not found" });
+    }
+  } catch (error) {
+    console.error("❌ Access Code Verification Error:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
