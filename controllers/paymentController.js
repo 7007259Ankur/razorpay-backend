@@ -62,17 +62,18 @@ export const paymentVerification = async (req, res) => {
 // ✅ New Controller to verify access code before AI Predictor usage
 export const verifyAccessCode = async (req, res) => {
   try {
-    const { accessCode } = req.params;
+    const { accessCode } = req.body; // ✅ FIXED - use body, not params
 
     const payment = await Payment.findOne({ accessCode });
 
     if (payment) {
-      res.json({ success: true });
+      return res.json({ success: true });
     } else {
-      res.json({ success: false, message: "Invalid access code or payment not found" });
+      return res.json({ success: false, message: "Invalid access code or payment not found" });
     }
   } catch (error) {
     console.error("❌ Access Code Verification Error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
