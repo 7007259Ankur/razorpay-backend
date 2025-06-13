@@ -2,7 +2,6 @@ import { instance } from "../server.js";
 import crypto from "crypto";
 import { Payment } from "../models/paymentModel.js";
 
-
 export const checkout = async (req, res) => {
   try {
     const options = {
@@ -29,7 +28,7 @@ export const paymentVerification = async (req, res) => {
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_APT_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_API_SECRET) // ✅ FIXED HERE
       .update(body.toString())
       .digest("hex");
 
@@ -43,7 +42,6 @@ export const paymentVerification = async (req, res) => {
       });
 
       res.redirect(`https://voluble-strudel-67099c.netlify.app/paymentsuccess?reference=${razorpay_payment_id}`);
-
     } else {
       res.status(400).json({
         success: false,
